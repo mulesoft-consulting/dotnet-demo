@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:dotnet="http://www.mulesoft.org/schema/mule/dotnet"
+      xmlns:http="http://www.mulesoft.org/schema/mule/http"
+      xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns="http://www.mulesoft.org/schema/mule/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/dotnet http://www.mulesoft.org/schema/mule/dotnet/current/mule-dotnet.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+    <http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config"
+                          doc:id="3220b6f4-54ee-4319-8a96-34b38a05c8ce">
+        <http:listener-connection host="localhost" port="8081"/>
+    </http:listener-config>
+    <dotnet:dot-net-config name="Microsoft_DotNet_Dot_Net" doc:name="Microsoft DotNet Dot Net"
+                           doc:id="29005817-a511-4d95-99d6-8a2b03b7672c">
+        <dotnet:resource-connection scope="Singleton" path="DemoDotNet.dll"/>
+    </dotnet:dot-net-config>
+    <flow name="sum-of-digits" doc:id="541c29f4-25b9-4417-bca4-346d8faf3985">
+        <http:listener doc:name="Listener" doc:id="15d2b430-feac-4b86-961b-d3db24294597"
+                       config-ref="HTTP_Listener_config" path="/sumOfDigits"/>
+        <ee:transform doc:name="Transform Message" doc:id="8c13e23e-3ae4-4cf3-94d7-f9fc9920ace9">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	number: payload.num
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+        <dotnet:execute doc:name="Execute" doc:id="64597105-1579-4b0b-840b-f39f44543af1"
+                        config-ref="Microsoft_DotNet_Dot_Net"
+                        type="DemoDotNet.NumberLibrary, DemoDotNet, Version=1.0.0.0, Culture=neutral, PublicKeyToken=ffb06b9bfafdf027"
+                        method="DemoDotNet.NumberLibrary, DemoDotNet, Version=1.0.0.0, Culture=neutral, PublicKeyToken=ffb06b9bfafdf027 | SumOfDigits(System.Int32 number) -&gt; System.Int32"/>
+        <ee:transform doc:name="Transform Message" doc:id="51fbf86f-cb7e-4c20-b100-041ab5b112b4">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+    </flow>
+    <flow name="reverse-number" doc:id="15855a93-a875-47e6-b121-59b33f328b11">
+        <http:listener doc:name="Listener" doc:id="f90348e4-44da-46a5-8113-500d7fdb5afe"
+                       config-ref="HTTP_Listener_config" path="/reverseNumber"/>
+        <ee:transform doc:name="Transform Message" doc:id="7754cdf0-8474-4135-b9ab-b0c70961a5c7">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	number: payload.num
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+        <dotnet:execute
+                type="DemoDotNet.NumberLibrary, DemoDotNet, Version=1.0.0.0, Culture=neutral, PublicKeyToken=ffb06b9bfafdf027"
+                method="DemoDotNet.NumberLibrary, DemoDotNet, Version=1.0.0.0, Culture=neutral, PublicKeyToken=ffb06b9bfafdf027 | Reverse(System.Int32 number) -&gt; System.Int32"
+                doc:name="Execute" doc:id="fc53c3d5-cb5c-44e3-83b4-d8e328927fd7" config-ref="Microsoft_DotNet_Dot_Net"/>
+        <ee:transform doc:name="Transform Message" doc:id="20e50e20-9379-4ee5-95ec-8b36c5833a45">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+    </flow>
+    <flow name="format-date" doc:id="4de05a13-e01c-45ab-ac87-6aba04a295e6">
+        <http:listener doc:name="Listener" doc:id="efb92069-954b-427b-9009-31153e8cee32"
+                       config-ref="HTTP_Listener_config" path="formatDate"/>
+        <ee:transform doc:name="Transform Message" doc:id="7e4030a4-9519-4fc1-ae54-f2f848958e79">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	date: payload.date,
+	format: payload.format
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+        <dotnet:execute
+                type="DemoDotNet.DateLibrary, DemoDotNet, Version=1.0.0.0, Culture=neutral, PublicKeyToken=ffb06b9bfafdf027"
+                doc:name="Execute" doc:id="810f4a82-1087-43af-b6d6-1c5262a54714" config-ref="Microsoft_DotNet_Dot_Net"
+                method="DemoDotNet.DateLibrary, DemoDotNet, Version=1.0.0.0, Culture=neutral, PublicKeyToken=ffb06b9bfafdf027 | FormatDate(System.String date, System.String format) -&gt; System.String"/>
+        <ee:transform doc:name="Transform Message" doc:id="1130e196-30cd-4820-a92a-bf095f3f50ac">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+    </flow>
+    <flow name="starts-with-upper" doc:id="6df8b150-e392-46be-9725-f835358ed74b">
+        <http:listener doc:name="Listener" doc:id="9b637d5f-7c84-4e0b-adcf-691bd12e0ee8"
+                       config-ref="HTTP_Listener_config" path="startsWithUpper"/>
+        <ee:transform doc:name="Transform Message" doc:id="410ebeb2-0f04-4098-800c-10a4a94c363d">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	str: payload.str
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+        <dotnet:execute
+                type="DemoDotNet.StringLibrary, DemoDotNet, Version=1.0.0.0, Culture=neutral, PublicKeyToken=ffb06b9bfafdf027"
+                method="DemoDotNet.StringLibrary, DemoDotNet, Version=1.0.0.0, Culture=neutral, PublicKeyToken=ffb06b9bfafdf027 | StartsWithUpper(System.String str) -&gt; System.Boolean"
+                doc:name="Execute" doc:id="f4c6fecb-314a-4108-9cd0-2a9db4ac4bda" config-ref="Microsoft_DotNet_Dot_Net"/>
+        <ee:transform doc:name="Transform Message" doc:id="aa2d4489-a7c4-4106-9ee5-9f9520294cef">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+    </flow>
+    <flow name="substring" doc:id="f16ceeed-f643-4bcf-9c0e-67cafe95fd63">
+        <http:listener doc:name="Listener" doc:id="f8c8a8de-494f-4c74-b816-3d8ecb74ead5"
+                       config-ref="HTTP_Listener_config" path="substring"/>
+        <ee:transform doc:name="Transform Message" doc:id="a893ebd0-4a30-40ca-8761-4cd2ac353a2a">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	str: payload.str,
+	start: payload.start,
+	length: payload.length 
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+        <dotnet:execute
+                type="DemoDotNet.StringLibrary, DemoDotNet, Version=1.0.0.0, Culture=neutral, PublicKeyToken=ffb06b9bfafdf027"
+                method="DemoDotNet.StringLibrary, DemoDotNet, Version=1.0.0.0, Culture=neutral, PublicKeyToken=ffb06b9bfafdf027 | Substring(System.String str, System.Int32 start, System.Int32 length) -&gt; System.String"
+                doc:name="Execute" doc:id="9d842e19-4e39-4a11-8bdb-b3b134fce823" config-ref="Microsoft_DotNet_Dot_Net"/>
+        <ee:transform doc:name="Transform Message" doc:id="2e41f733-2ab8-4d0f-b042-5b091bdc44cc">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+    </flow>
+    <flow name="person-to-string" doc:id="5b64cfa7-0ba1-4347-840e-c139e526aa7c">
+        <http:listener doc:name="Listener" doc:id="39c5367c-46c8-4b98-800c-1711f392c62c"
+                       config-ref="HTTP_Listener_config" path="/personToString"/>
+        <ee:transform doc:name="Transform Message" doc:id="1e93d0d7-6650-4b97-b714-448211cf239a">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	person: {
+		name: payload.name,
+		age: payload.age
+	}
+}
+]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+        <dotnet:execute
+                type="DemoDotNet.PersonLibrary, DemoDotNet, Version=1.0.0.0, Culture=neutral, PublicKeyToken=ffb06b9bfafdf027"
+                method="DemoDotNet.PersonLibrary, DemoDotNet, Version=1.0.0.0, Culture=neutral, PublicKeyToken=ffb06b9bfafdf027 | PersonToString(DemoDotNet.Person person) -&gt; System.String"
+                doc:name="Execute" doc:id="5eb5756e-e9e0-4603-9a5f-d97050c619fb" config-ref="Microsoft_DotNet_Dot_Net"/>
+        <ee:transform doc:name="Transform Message" doc:id="8ce65f63-862f-47a1-9d91-53df85eeaee5">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+    </flow>
+</mule>
